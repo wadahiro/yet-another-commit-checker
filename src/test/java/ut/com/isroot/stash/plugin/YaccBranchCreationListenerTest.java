@@ -42,7 +42,8 @@ public class YaccBranchCreationListenerTest {
     @Mock private Branch branch;
     @Mock private CancelState cancelState;
     @Mock private SecurityService securityService;
-    @Mock private EscalatedSecurityContext escalatedSecurityContext;
+    @Mock private EscalatedSecurityContext escalatedSecurityContextForRepositoryHook;
+    @Mock private EscalatedSecurityContext escalatedSecurityContextForSettings;
     @Mock private PluginSettingsFactory pluginSettingsFactory;
     @Mock private PluginSettings pluginSettings;
     @Mock private SettingsBuilder settingsBuilder;
@@ -64,8 +65,12 @@ public class YaccBranchCreationListenerTest {
 
         //mock hook retrieval
         when(securityService.withPermission(Permission.REPO_ADMIN, "Get plugin configuration"))
-                .thenReturn(escalatedSecurityContext);
-        when(escalatedSecurityContext.call(any(UncheckedOperation.class))).thenReturn(repositoryHook);
+                .thenReturn(escalatedSecurityContextForRepositoryHook);
+        when(escalatedSecurityContextForRepositoryHook.call(any(UncheckedOperation.class))).thenReturn(repositoryHook);
+
+        when(securityService.withPermission(Permission.REPO_ADMIN, "Get hook configuration"))
+                .thenReturn(escalatedSecurityContextForSettings);
+        when(escalatedSecurityContextForSettings.call(any(UncheckedOperation.class))).thenReturn(settings);
     }
 
     @Test

@@ -42,7 +42,7 @@ public class YaccBranchCreationListener {
     public void onBranchCreation(BranchCreationRequestedEvent event) {
         final Repository repository = event.getRepository();
 
-        RepositoryHook hook = securityService.withPermission(Permission.REPO_ADMIN, "Get plugin configuration").call(
+        final RepositoryHook hook = securityService.withPermission(Permission.REPO_ADMIN, "Get plugin configuration").call(
                 new UncheckedOperation<RepositoryHook>() {
                     public RepositoryHook perform() {
                         return repositoryHookService.getByKey(repository, "com.isroot.stash.plugin.yacc:yaccHook");
@@ -56,7 +56,12 @@ public class YaccBranchCreationListener {
             // Repository hook overrides default pre-receive hook configuration
             log.debug("PreReceiveRepositoryHook configured. Use repository configuration.");
 
-            settings = repositoryHookService.getSettings(repository, hook.getDetails().getKey());
+            settings = securityService.withPermission(Permission.REPO_ADMIN, "Get hook configuration").call(
+                    new UncheckedOperation<Settings>() {
+                        public Settings perform() {
+                            return repositoryHookService.getSettings(repository, hook.getDetails().getKey());
+                        }
+                    });
         } else {
             // Repository hook not configured
             log.debug("PreReceiveRepositoryHook not configured.  Use global configuration.");
